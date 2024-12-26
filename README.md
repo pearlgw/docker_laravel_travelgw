@@ -18,6 +18,8 @@ Proyek ini adalah aplikasi berbasis Laravel yang berjalan menggunakan Docker.
    php artisan key:generate
    php artisan storage:link
    php artisan migrate --seed
+   npm install
+   npm run build
 
 4. Aplikasi akan berjalan di port 1001.
    
