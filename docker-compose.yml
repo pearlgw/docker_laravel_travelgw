@@ -1,0 +1,76 @@
+version: "3"
+
+services:
+  webserver:
+    image: nginx:latest
+    container_name: webserver_travelgw
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "1001:80"
+    volumes:
+      - ./src:/var/www
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    links:
+      - php
+    networks:
+      - travelgw_networks
+
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: php_travelgw
+    # image: php:8.2-fpm
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: php
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    volumes:
+      - ./src:/var/www
+      - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - travelgw_networks
+
+  db:
+    image: mariadb:latest
+    container_name: db_travelgw
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      SERVICE_NAME: mariadb
+      SERVICE_TAGS: dev
+    volumes:
+      - db:/var/lib/mysql
+      - ./mysql/my.conf:/etc/mysql/my.conf
+    networks:
+      - travelgw_networks
+
+  # phpmyadmin:
+  #   image: phpmyadmin:latest
+  #   container_name: phpmyadmin_travelgw
+  #   restart: unless-stopped
+  #   ports:
+  #     - "1000:80"
+  #   environment:
+  #     PMA_HOST: db
+  #   networks:
+  #     - travelgw_networks
+  #   depends_on:
+  #     - db
+
+networks:
+  travelgw_networks:
+    driver: bridge
+
+volumes:
+  db:
+    driver: local
